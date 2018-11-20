@@ -4,6 +4,9 @@ Sync multiple charts together to explore market history and discover new insight
 
 [Try the demo](http://michja.com/demo/market-analysis-tool/)
 
+## About
+This is a code demo project.  Feel free to use any part that you like (as GPL) and please get in touch if you're building something interesting!
+
 ## Usage
 Clone the repo.  
   
