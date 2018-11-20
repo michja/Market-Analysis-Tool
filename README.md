@@ -13,4 +13,4 @@ Clone the repo.
 **Front-end**  
 `cd frontend` and `npm start` to launch the front-end for local development.  
 or  
-`cd frontend` and `npm run build` to build the production ready front-end
+`cd frontend` and `npm run build` to build the production ready front-end into the /frontend/build/ directory.
