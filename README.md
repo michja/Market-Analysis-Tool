@@ -1,4 +1,4 @@
-# Market-Analysis-Tool
+# Market Analysis Tool
 A tool for looking at cryptocurrency market data side by side.  
 Sync multiple charts together to explore market history and discover new insights!
 
