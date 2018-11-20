@@ -1,0 +1,15 @@
+label[data-quote-icon="BNB"]::after {
+  background-image: url('bnb.png');
+}
+
+label[data-quote-icon="ETH"]::after {
+  background-image: url('eth.png');
+}
+
+label[data-quote-icon="BTC"]::after {
+  background-image: url('btc.png');
+}
+
+label[data-quote-icon="USDT"]::after {
+  background-image: url('usdt.png');
+}

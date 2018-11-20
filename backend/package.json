@@ -1,0 +1,14 @@
+{
+  "name": "backend",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "nodemon ./app"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "debug": "~2.6.9",
+    "sqlite": "^3.0.0",
+    "ws": "^6.1.0"
+  }
+}
