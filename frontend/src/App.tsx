@@ -5,7 +5,8 @@ import { IChart, Tick, TicksSplit } from "./types/charts"
 import Charts from "./components/charts/charts"
 import { Store } from "./types/store"
 import socketService from "./services/socketService"
-import { hasSeenHelp, setSeenHelp, subtract30mInterval } from "./helpers"
+import { subtract30mInterval } from "./helpers"
+import { hasSeenHelp, setSeenHelp } from './services/localStorageService'
 import Help from "./components/help/Help"
 import MarketsSidebar from "./components/markets/marketsSidebar"
 

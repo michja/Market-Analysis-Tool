@@ -9,14 +9,6 @@ export const timestampToDateString = (timestamp: number) => {
   return `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`
 }
 
-export const hasSeenHelp = (): boolean => {
-  return localStorage.getItem("seenHelp") === "1"
-}
-
-export const setSeenHelp = () => {
-  localStorage.setItem("seenHelp", "1")
-}
-
 export const subtractTimeInterval = (from: number, seconds: number, limit: number = 500): number => {
   return from - (seconds * 1000 * limit)
 }
