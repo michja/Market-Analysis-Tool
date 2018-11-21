@@ -10,8 +10,6 @@ class WS {
   constructor() {
     const WS_HOST = process.env.NODE_ENV === 'production' ? 'ws://michja.com:8080' : 'ws://localhost:8080';
     this._ws = new WebSocket(WS_HOST)
-    // this._ws = new WebSocket("ws://michja.com:8080")
-
 
     // Convert all messages from JSON and send them on
     this._ws.onmessage = (e: MessageEvent) => {
