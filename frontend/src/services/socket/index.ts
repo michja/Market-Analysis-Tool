@@ -113,7 +113,11 @@ export class SocketService {
    * @return {void}
    */
   relayMarketData = (markets: Market[]) => {
-    if (this._marketDataCB) this._marketDataCB(markets)
+    if (this._marketDataCB) {
+      this._marketDataCB(markets)
+    } else {
+      console.error("Received market data before callback was registered:", markets)
+    }
   }
 
   /**
@@ -123,7 +127,11 @@ export class SocketService {
    * @return {void}
    */
   relayChartData = (market: Market, ticks: Tick[]) => {
-    if (this._chartDataCB) this._chartDataCB(market, ticks)
+    if (this._chartDataCB) {
+      this._chartDataCB(market, ticks)
+    } else {
+      console.error("Received chart data before callback was registered:", market)
+    }
   }
 }
 
