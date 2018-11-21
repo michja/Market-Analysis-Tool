@@ -1,12 +1,12 @@
 import * as React from "react"
-import { socket } from "./WebSocket"
 import { Market } from "./types/markets"
 import { IChart, Tick, TicksSplit } from "./types/charts"
+import { socket } from "./services/socket/WebSocket"
+import socketService from "./services/socket"
 import Charts from "./components/charts/charts"
 import { Store } from "./types/store"
-import socketService from "./services/socketService"
 import { subtract30mInterval } from "./helpers"
-import { hasSeenHelp, setSeenHelp } from './services/localStorageService'
+import { hasSeenHelp, setSeenHelp } from './services/localStorage'
 import Help from "./components/help/Help"
 import MarketsSidebar from "./components/markets/marketsSidebar"
 

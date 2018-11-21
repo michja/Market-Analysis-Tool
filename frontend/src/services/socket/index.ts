@@ -1,8 +1,8 @@
-import { SocketMessage, ResponseMarkets, ResponseTicks } from "../types/socket"
-import { Market } from "../types/markets"
-import { Tick, TickRequest } from "../types/charts"
-import { socket } from "../WebSocket"
-import { subtract30mInterval } from "../helpers"
+import { SocketMessage, ResponseMarkets, ResponseTicks } from "../../types/socket"
+import { Market } from "../../types/markets"
+import { Tick, TickRequest } from "../../types/charts"
+import { socket } from "./WebSocket"
+import { subtract30mInterval } from "../../helpers"
 
 export class SocketService {
   _chartDataCB: (market: Market, ticks: Tick[]) => void

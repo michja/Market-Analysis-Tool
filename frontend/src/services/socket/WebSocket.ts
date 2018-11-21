@@ -1,4 +1,4 @@
-import { SocketMessage } from "./types/socket"
+import { SocketMessage } from "../../types/socket"
 
 class WS {
   _ws: WebSocket

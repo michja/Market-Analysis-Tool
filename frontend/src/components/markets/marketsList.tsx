@@ -4,7 +4,7 @@ import SearchBox from "../generic/searchBox"
 import MarketListHeader from "./marketListHeader"
 import MarketListItem from "./marketListItem"
 import MarketQuoteFilter from "./marketsQuoteFilter"
-import socketService from "../../services/socketService"
+import socketService from "../../services/socket"
 
 interface PMarketsList {
   markets: Market[]

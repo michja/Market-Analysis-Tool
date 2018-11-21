@@ -1,5 +1,5 @@
 import * as React from "react"
-import socketService from "../../services/socketService"
+import socketService from "../../services/socket"
 import Refresh from "./refresh.png"
 
 const MarketListHeader: React.StatelessComponent = () => {
