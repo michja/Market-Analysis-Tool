@@ -108,28 +108,8 @@ class App extends React.Component<{}, Store> {
   }
 
   /******************************
-          charts - ticks             
+          charts        
   *******************************/
-
-  insertMoreTicks = (index: number, ticks: Tick[]) => {
-    const chart = this.state.charts[index]
-    if (ticks.length > 0) {
-      chart.ticksRequested = false
-    }
-    // get the current zoom or default
-    const zoom = chart.ticksSplit.visible.length || 30
-    chart.ticksSplit.before.push(...ticks)
-
-    if (typeof chart.loading === "number") {
-      const nextTicksSplit = this.scrollToTime(chart.ticksSplit, chart.loading)
-      if (nextTicksSplit) chart.ticksSplit = nextTicksSplit
-    } else {
-      const nextChart = this.reZoomTicksSplit(chart, zoom)
-      chart.ticksSplit = nextChart.ticksSplit
-    }
-    chart.loading = false
-    this.updateChart(index, chart)
-  }
 
   /**
    * create a new chart and add it into state
@@ -201,6 +181,44 @@ class App extends React.Component<{}, Store> {
     )
   }
 
+  /******************************
+          charts - ticks             
+  *******************************/
+
+  /**
+   * adds new tick data to a chart
+   * optionally splits the ticks at a new timestamp if
+   * the chart was waiting for data to jump to a new timestamp
+   * @param  index: number  [chart index]
+   * @param  ticks: Tick[]  [new tick data]
+   * @return {void}
+   */
+  insertMoreTicks = (index: number, ticks: Tick[]) => {
+    const chart = this.state.charts[index]
+    if (ticks.length > 0) {
+      chart.ticksRequested = false
+    }
+    // get the current zoom or default
+    const zoom = chart.ticksSplit.visible.length || 30
+
+    // insert the new ticks
+    chart.ticksSplit.before.push(...ticks)
+
+    // is the chart waiting to jump to a timestamp in these ticks?
+    if (typeof chart.loading === "number") {
+      // yes -> re split the ticks at that timestamp
+      const nextTicksSplit = this.scrollToTime(chart.ticksSplit, chart.loading)
+      if (nextTicksSplit) chart.ticksSplit = nextTicksSplit
+    } else {
+      // no -> just set the zoom
+      const nextChart = this.reZoomTicksSplit(chart, zoom)
+      chart.ticksSplit = nextChart.ticksSplit
+    }
+    chart.loading = false
+    this.updateChart(index, chart)
+  }
+
+
   /**
    * change a chart zoom level (number of visible ticks)
    * @param  market: Market  [which chart?]
@@ -260,48 +278,6 @@ class App extends React.Component<{}, Store> {
       after
     }
     return chart
-  }
-
-  maybeRequestMoreTicks = (chart: IChart): boolean => {
-    // don't make more than one request
-    if (chart.ticksRequested) return chart.ticksRequested
-
-    const { visible, before } = chart.ticksSplit
-    const combined = [...visible, ...before]
-
-    // should we request more ticks?
-    if (combined.length < 300) {
-      const from = combined[combined.length - 1].openTimestamp
-      chart.ticksRequested = true
-      socketService.getTicksBefore(chart.market, from)
-    }
-
-    return chart.ticksRequested
-  }
-
-  /**
-   * Apply current zoom level of linked charts to a chart
-   * @param  chart: IChart  [chart to zoom]
-   * @return {IChart}       [chart with new zoom]
-   */
-  matchLinkedZoom = (chart: IChart): IChart => {
-    const linkedCharts = this.state.charts.filter(c => c.linked)
-
-    // no charts already linked
-    if (!linkedCharts.length) {
-      return chart
-    }
-
-    // get the current zoom
-    const zoom = linkedCharts[0].ticksSplit.visible.length
-    // apply
-    chart = this.reZoomTicksSplit(chart, zoom)
-    return chart
-  }
-
-  matchLinkedZoomAndTime = (chart: IChart): IChart => {
-    const zoomedChart = this.matchLinkedZoom(chart)
-    return this.matchLinkedTimestamp(zoomedChart)
   }
 
   /**
@@ -387,45 +363,12 @@ class App extends React.Component<{}, Store> {
     return chart
   }
 
-  matchLinkedTimestamp = (chart: IChart): IChart => {
-    const linkedCharts = this.state.charts.filter(c => c.linked)
-
-    // no charts already linked
-    if (!linkedCharts.length) {
-      return chart
-    }
-
-    const openTimestamp = linkedCharts[0].ticksSplit.visible[0].openTimestamp
-    const nextTicksSplit = this.scrollToTime(chart.ticksSplit, openTimestamp)
-
-    // can't find timestamp
-    if (!nextTicksSplit) {
-      return this.requestHistoricTicks(chart, openTimestamp)
-    }
-
-    chart.ticksSplit = nextTicksSplit
-
-    return chart
-  }
-
-  requestHistoricTicks = (chart: IChart, from: number): IChart => {
-    // get the oldest current time
-    const { visible, before } = chart.ticksSplit
-    const combined = [...visible, ...before]
-
-    // if no current ticks just return
-    if (!combined.length) return chart
-
-    // save the request so we can jump to it when the ticks arrive
-    chart.loading = from
-    // construct range from 500 before target to 1 before current
-    from = subtract30mInterval(from)
-    const to = combined[combined.length - 1].openTimestamp
-    // send the request
-    socketService.getTicks({ market: chart.market, to, from })
-    return chart
-  }
-
+  /**
+   * Scroll ticks to a given timestamp
+   * @param  ticksSPlit: TicksSplit  [the ticks]
+   * @param  openTimestamp: number   [timestamp to scroll to]
+   * @return {ticksSplit}            [ticks with scroll applied]
+   */
   scrollToTime = (
     ticksSplit: TicksSplit,
     openTimestamp: number
@@ -455,8 +398,63 @@ class App extends React.Component<{}, Store> {
   }
 
   /******************************
-        charts - link state             
-   *******************************/
+       charts - linked charts             
+  *******************************/
+  
+  /**
+   * Apply current zoom level of linked charts to a chart
+   * @param  chart: IChart  [chart to zoom]
+   * @return {IChart}       [chart with new zoom]
+   */
+  matchLinkedZoom = (chart: IChart): IChart => {
+    const linkedCharts = this.state.charts.filter(c => c.linked)
+
+    // no charts already linked
+    if (!linkedCharts.length) {
+      return chart
+    }
+
+    // get the current zoom
+    const zoom = linkedCharts[0].ticksSplit.visible.length
+    // apply
+    chart = this.reZoomTicksSplit(chart, zoom)
+    return chart
+  }
+
+  /**
+   * composite function for matching zoom and time
+   * @param  chart: IChart [chart]
+   * @return {IChart}      [chart with adjusted ticks]
+   */
+  matchLinkedZoomAndTime = (chart: IChart): IChart => {
+    const zoomedChart = this.matchLinkedZoom(chart)
+    return this.matchLinkedTimestamp(zoomedChart)
+  }
+
+  /**
+   * Apply the current timestamp of linked charts to another chart
+   * @param  chart: IChart [chart]
+   * @return {IChart}      [chart with timestamp applied]
+   */
+  matchLinkedTimestamp = (chart: IChart): IChart => {
+    const linkedCharts = this.state.charts.filter(c => c.linked)
+
+    // no charts already linked
+    if (!linkedCharts.length) {
+      return chart
+    }
+
+    const openTimestamp = linkedCharts[0].ticksSplit.visible[0].openTimestamp
+    const nextTicksSplit = this.scrollToTime(chart.ticksSplit, openTimestamp)
+
+    // can't find timestamp
+    if (!nextTicksSplit) {
+      return this.requestHistoricTicks(chart, openTimestamp)
+    }
+
+    chart.ticksSplit = nextTicksSplit
+    return chart
+  }
 
   /**
    * set or clear a chart link state
@@ -481,6 +479,57 @@ class App extends React.Component<{}, Store> {
     // flip linked status
     chart.linked = !chart.linked
     this.updateChart(index, chart)
+  }
+  
+  /******************************
+      charts - data requests             
+  *******************************/
+  
+  /**
+   * Tests whether a chart should request more 
+   * tick data from the server
+   * @param  chart: IChart [chart]
+   * @return {boolean}     [should request more?]
+   */
+  maybeRequestMoreTicks = (chart: IChart): boolean => {
+    // don't make more than one request
+    if (chart.ticksRequested) return chart.ticksRequested
+
+    const { visible, before } = chart.ticksSplit
+    const combined = [...visible, ...before]
+
+    // should we request more ticks?
+    if (combined.length < 300) {
+      const from = combined[combined.length - 1].openTimestamp
+      chart.ticksRequested = true
+      socketService.getTicksBefore(chart.market, from)
+    }
+
+    return chart.ticksRequested
+  }
+
+  /**
+   * Request more tick data for a given chart
+   * @param  chart: IChart  [chart]
+   * @param  from: number   [timestamp, from when?]
+   * @return {IChart}       [chart]
+   */
+  requestHistoricTicks = (chart: IChart, from: number): IChart => {
+    // get the oldest current time
+    const { visible, before } = chart.ticksSplit
+    const combined = [...visible, ...before]
+
+    // if no current ticks just return
+    if (!combined.length) return chart
+
+    // save the request so we can jump to it when the ticks arrive
+    chart.loading = from
+    // construct range from 500 before target to 1 before current
+    from = subtract30mInterval(from)
+    const to = combined[combined.length - 1].openTimestamp
+    // send the request
+    socketService.getTicks({ market: chart.market, to, from })
+    return chart
   }
 }
 
