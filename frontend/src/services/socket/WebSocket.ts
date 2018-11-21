@@ -49,7 +49,11 @@ class WS {
    * @return : void
    */
   relayResponse = (data: object) => {
-    if (this._responseCB) this._responseCB(data)
+    if (this._responseCB) {
+      this._responseCB(data)
+    } else {
+      console.error("Received socket response before callback was registered:", data)
+    }
   }
 
   /**
