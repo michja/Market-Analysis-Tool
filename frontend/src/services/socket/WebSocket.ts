@@ -7,6 +7,28 @@ class WS {
    */
   _responseCB: (data: object) => void
 
+  /**
+   * Store a new response callback
+   * @param   cb: (data: object) [the callback]
+   * @return : void
+   */
+  setResponseCB = (cb: (data: object) => void) => {
+    this._responseCB = cb
+  }
+
+  /**
+   * Pass message to callback if set
+   * @param   data: object  [the data]
+   * @return : void
+   */
+  relayResponse = (data: object) => {
+    if (this._responseCB) {
+      this._responseCB(data)
+    } else {
+      console.error("Received socket response before callback was registered:", data)
+    }
+  }
+  
   constructor() {
     const WS_HOST = process.env.NODE_ENV === 'production' ? 'ws://michja.com:8080' : 'ws://localhost:8080';
     this._ws = new WebSocket(WS_HOST)
@@ -30,28 +52,6 @@ class WS {
    */
   leave = () => {
     this._ws.close()
-  }
-
-  /**
-   * Store a new response callback
-   * @param   cb: (data: object) [the callback]
-   * @return : void
-   */
-  setResponseCB = (cb: (data: object) => void) => {
-    this._responseCB = cb
-  }
-
-  /**
-   * Pass message to callback if set
-   * @param   data: object  [the data]
-   * @return : void
-   */
-  relayResponse = (data: object) => {
-    if (this._responseCB) {
-      this._responseCB(data)
-    } else {
-      console.error("Received socket response before callback was registered:", data)
-    }
   }
 
   /**
