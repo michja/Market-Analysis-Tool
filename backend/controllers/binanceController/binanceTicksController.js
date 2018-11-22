@@ -40,7 +40,7 @@ exports.recursiveFetchTicks = async (
   // get some ticks
   const ticks = await exports.fetchTicks(market, to, limit, interval)
   // got the full set?
-  if (ticks[0].openTimestamp < from) {
+  if (ticks.length && ticks[0].openTimestamp < from) {
     // yes -> give them back
     return ticks
   } else {
