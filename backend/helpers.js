@@ -29,3 +29,7 @@ exports.subtractTimeInterval = (from, seconds, limit = 500) => {
 exports.subtract30mInterval = (from, limit = 500) => {
   return exports.subtractTimeInterval(from, 60 * 30, limit)
 }
+
+exports.timeout = ms => {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}

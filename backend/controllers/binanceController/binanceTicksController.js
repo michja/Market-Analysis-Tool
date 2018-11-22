@@ -1,6 +1,10 @@
 const binanceAdapter = require("../../adapters/binanceAdapter")
 const Ticks = require("../../models/Ticks")
-const { currentTimestamp, subtract30mInterval } = require("../../helpers")
+const {
+  currentTimestamp,
+  subtract30mInterval,
+  timeout
+} = require("../../helpers")
 const { request } = require("../../models/binanceAPI")
 
 /**
@@ -30,7 +34,8 @@ exports.recursiveFetchTicks = async (
   from,
   to,
   limit = 500,
-  interval = "30m"
+  interval = "30m",
+  cooldown = 0
 ) => {
   // get some ticks
   const ticks = await exports.fetchTicks(market, to, limit, interval)
@@ -42,10 +47,26 @@ exports.recursiveFetchTicks = async (
     // no -> get more
     // starting from one interval before the last time
     const nextTo = subtract30mInterval(ticks[ticks.length - 1].openTimestamp)
-    return [
-      ...ticks,
-      ...(await exports.recursiveFetchTicks(market, from, nextTo))
-    ]
+
+    // cooldown 1s every 3 function calls to be kind to the api
+    cooldown++
+    const timeoutMs = cooldown % 3 === 0 ? 1000 : 0
+
+    // promise all will hold up the flow until
+    // timeout has run down for timeoutMs milliseconds
+    const [nextTicks] = await Promise.all([
+      exports.recursiveFetchTicks(
+        market,
+        from,
+        nextTo,
+        limit,
+        interval,
+        cooldown
+      ),
+      timeout(timeoutMs)
+    ])
+
+    return [...ticks, ...nextTicks]
   }
 }
 
